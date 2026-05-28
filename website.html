@@ -1,0 +1,1623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>[ JIRAIYA_007 ] // PORTFOLIO</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #00ff41;
+    --green-dim: #00cc33;
+    --green-dark: #003b00;
+    --green-glow: rgba(0,255,65,0.15);
+    --green-glow-strong: rgba(0,255,65,0.4);
+    --black: #000000;
+    --bg: #020902;
+    --panel: #050f05;
+    --border: #00ff4133;
+    --text-dim: #008f11;
+    --red: #ff3c3c;
+    --amber: #ffb700;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--green);
+    font-family: 'Share Tech Mono', monospace;
+    overflow-x: hidden;
+    cursor: crosshair;
+  }
+
+  /* ── MATRIX RAIN CANVAS ── */
+  #matrix-canvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+    opacity: 0.07;
+    pointer-events: none;
+  }
+
+  /* ── SCANLINES ── */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.08) 2px,
+      rgba(0,0,0,0.08) 4px
+    );
+    pointer-events: none;
+    z-index: 9998;
+  }
+
+  /* ── SCREEN FLICKER ── */
+  @keyframes flicker {
+    0%,100% { opacity: 1; }
+    92% { opacity: 1; }
+    93% { opacity: 0.85; }
+    94% { opacity: 1; }
+    96% { opacity: 0.9; }
+    97% { opacity: 1; }
+  }
+  body { animation: flicker 8s infinite; }
+
+  /* ── LAYOUT ── */
+  #app { position: relative; z-index: 1; min-height: 100vh; }
+
+  /* ── BOOT SCREEN ── */
+  #boot-screen {
+    position: fixed;
+    inset: 0;
+    background: #000;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-family: 'VT323', monospace;
+    font-size: 1.1rem;
+    color: var(--green);
+    padding: 2rem;
+  }
+  #boot-screen.hidden { display: none; }
+  .boot-line { opacity: 0; white-space: nowrap; }
+  @keyframes bootIn { from { opacity:0; } to { opacity:1; } }
+  .boot-cursor { display: inline-block; width: 10px; height: 1.1em; background: var(--green); animation: blink 0.6s step-end infinite; vertical-align: text-bottom; }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* ── NAV ── */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(0,0,0,0.92);
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(4px);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+  }
+  .nav-logo {
+    font-family: 'Orbitron', monospace;
+    font-size: 1rem;
+    font-weight: 900;
+    color: var(--green);
+    text-shadow: 0 0 10px var(--green);
+    letter-spacing: 0.15em;
+  }
+  .nav-logo span { color: var(--text-dim); }
+  .nav-links { display: flex; gap: 0.2rem; }
+  .nav-links a {
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 0.78rem;
+    padding: 0.35rem 0.8rem;
+    border: 1px solid transparent;
+    letter-spacing: 0.1em;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .nav-links a::before {
+    content: '> ';
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .nav-links a:hover, .nav-links a.active {
+    color: var(--green);
+    border-color: var(--border);
+    background: var(--green-glow);
+    text-shadow: 0 0 8px var(--green);
+  }
+  .nav-links a:hover::before, .nav-links a.active::before { opacity: 1; }
+  .nav-status {
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .status-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 6px var(--green);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.4); opacity: 0.6; } }
+
+  /* ── MAIN CONTENT ── */
+  main { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+
+  /* ── HERO ── */
+  #hero {
+    padding: 5rem 0 4rem;
+    text-align: center;
+    position: relative;
+  }
+  .hero-pre {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    letter-spacing: 0.3em;
+    margin-bottom: 1rem;
+  }
+  .hero-title {
+    font-family: 'VT323', monospace;
+    font-size: clamp(3rem, 8vw, 7rem);
+    line-height: 1;
+    color: var(--green);
+    text-shadow: 0 0 30px var(--green), 0 0 60px var(--green-dim);
+    margin-bottom: 1rem;
+    position: relative;
+  }
+  .hero-title .glitch {
+    position: relative;
+    display: inline-block;
+  }
+  .hero-title .glitch::before, .hero-title .glitch::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+  }
+  .hero-title .glitch::before {
+    color: #0ff;
+    animation: glitch1 3s infinite;
+    clip-path: polygon(0 20%, 100% 20%, 100% 40%, 0 40%);
+  }
+  .hero-title .glitch::after {
+    color: var(--red);
+    animation: glitch2 3s infinite;
+    clip-path: polygon(0 60%, 100% 60%, 100% 80%, 0 80%);
+  }
+  @keyframes glitch1 {
+    0%,90%,100% { transform: translate(0); }
+    92% { transform: translate(-3px, 1px); }
+    94% { transform: translate(3px, -1px); }
+    96% { transform: translate(0); }
+  }
+  @keyframes glitch2 {
+    0%,90%,100% { transform: translate(0); }
+    93% { transform: translate(3px, 1px); }
+    95% { transform: translate(-2px, -1px); }
+    97% { transform: translate(0); }
+  }
+  .hero-sub {
+    font-size: 1rem;
+    color: var(--text-dim);
+    max-width: 500px;
+    margin: 0 auto 2rem;
+    line-height: 1.7;
+  }
+  .hero-sub span { color: var(--green); }
+  .hero-stats {
+    display: flex;
+    justify-content: center;
+    gap: 3rem;
+    margin-top: 2rem;
+  }
+  .stat {
+    text-align: center;
+  }
+  .stat-val {
+    font-family: 'Orbitron', monospace;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--green);
+    text-shadow: 0 0 10px var(--green);
+  }
+  .stat-label { font-size: 0.65rem; color: var(--text-dim); letter-spacing: 0.15em; }
+
+  /* ── SECTION HEADER ── */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-header h2 {
+    font-family: 'Orbitron', monospace;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--green);
+    letter-spacing: 0.2em;
+    text-shadow: 0 0 8px var(--green);
+  }
+  .section-tag {
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    background: var(--green-dark);
+    border: 1px solid var(--border);
+    padding: 0.1rem 0.5rem;
+  }
+  .section-line { flex: 1; height: 1px; background: linear-gradient(to right, var(--border), transparent); }
+
+  /* ── PANEL / CARD BASE ── */
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+  .panel::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(to right, transparent, var(--green), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .panel:hover { border-color: var(--green-dim); box-shadow: 0 0 20px var(--green-glow); }
+  .panel:hover::before { opacity: 1; }
+
+  /* ── SECTION SPACER ── */
+  section { margin-bottom: 5rem; }
+
+  /* ── VIDEOS SECTION ── */
+  .videos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
+  }
+  .video-card { cursor: pointer; }
+  .video-thumb {
+    position: relative;
+    width: 100%;
+    padding-top: 56.25%;
+    background: #000;
+    overflow: hidden;
+    border-bottom: 1px solid var(--border);
+  }
+  .video-thumb video,
+  .video-thumb .thumb-placeholder {
+    position: absolute;
+    inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+  }
+  .thumb-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #000, #001a00);
+    color: var(--text-dim);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    gap: 0.5rem;
+  }
+  .thumb-placeholder .play-icon {
+    font-size: 2.5rem;
+    color: var(--green);
+    text-shadow: 0 0 20px var(--green);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  .video-overlay {
+    position: absolute;
+    inset: 0;
+    background: var(--green-glow);
+    opacity: 0;
+    transition: opacity 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    color: var(--green);
+    text-shadow: 0 0 30px var(--green);
+  }
+  .video-card:hover .video-overlay { opacity: 1; }
+  .video-info { padding: 1rem; }
+  .video-title { font-size: 0.9rem; color: var(--green); margin-bottom: 0.4rem; }
+  .video-meta { font-size: 0.7rem; color: var(--text-dim); display: flex; justify-content: space-between; }
+
+  /* ── VIDEO UPLOAD ZONE ── */
+  .upload-zone {
+    border: 2px dashed var(--border);
+    padding: 3rem 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    background: var(--panel);
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .upload-zone:hover, .upload-zone.drag-over {
+    border-color: var(--green);
+    background: var(--green-glow);
+    box-shadow: 0 0 30px var(--green-glow);
+  }
+  .upload-zone .upload-icon { font-size: 2.5rem; margin-bottom: 0.5rem; color: var(--text-dim); }
+  .upload-zone .upload-text { font-size: 0.85rem; color: var(--text-dim); }
+  .upload-zone .upload-text span { color: var(--green); }
+  #file-input { display: none; }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.9);
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+  .modal-overlay.active { display: flex; }
+  .modal {
+    background: var(--panel);
+    border: 1px solid var(--green-dim);
+    width: 90%;
+    max-width: 700px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 0 60px var(--green-glow-strong);
+    position: relative;
+  }
+  .modal-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .modal-header h3 { font-family: 'Orbitron', monospace; font-size: 0.85rem; letter-spacing: 0.15em; }
+  .modal-close {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--green);
+    width: 28px; height: 28px;
+    cursor: pointer;
+    font-size: 1rem;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .modal-close:hover { background: var(--red); border-color: var(--red); color: #fff; }
+  .modal-body { padding: 1.5rem; }
+  .modal video { width: 100%; border: 1px solid var(--border); margin-bottom: 1rem; }
+
+  /* ── PROJECTS GRID ── */
+  .projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+  }
+  .project-card {
+    padding: 1.5rem;
+  }
+  .project-tag {
+    display: inline-block;
+    font-size: 0.6rem;
+    padding: 0.15rem 0.5rem;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    margin-bottom: 0.75rem;
+    letter-spacing: 0.15em;
+  }
+  .project-tag.active { border-color: var(--green); color: var(--green); background: var(--green-dark); }
+  .project-name {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.85rem;
+    color: var(--green);
+    margin-bottom: 0.5rem;
+    font-weight: 700;
+  }
+  .project-desc { font-size: 0.78rem; color: var(--text-dim); line-height: 1.6; margin-bottom: 1rem; }
+  .project-stack { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1rem; }
+  .stack-badge {
+    font-size: 0.6rem;
+    padding: 0.15rem 0.5rem;
+    background: var(--green-dark);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+  }
+  .project-links { display: flex; gap: 0.5rem; }
+  .btn {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.72rem;
+    padding: 0.4rem 0.9rem;
+    border: 1px solid;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    letter-spacing: 0.05em;
+  }
+  .btn-green {
+    border-color: var(--green-dim);
+    color: var(--green);
+    background: transparent;
+  }
+  .btn-green:hover {
+    background: var(--green);
+    color: #000;
+    box-shadow: 0 0 15px var(--green-glow-strong);
+  }
+  .btn-dim {
+    border-color: var(--border);
+    color: var(--text-dim);
+    background: transparent;
+  }
+  .btn-dim:hover { border-color: var(--green-dim); color: var(--green); }
+
+  /* ── BLOG ── */
+  .blog-grid { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
+  .blog-card { padding: 1.5rem; display: grid; grid-template-columns: auto 1fr; gap: 1.5rem; }
+  .blog-date-block {
+    text-align: center;
+    min-width: 60px;
+    padding-top: 0.25rem;
+  }
+  .blog-day {
+    font-family: 'Orbitron', monospace;
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: var(--green);
+    line-height: 1;
+    text-shadow: 0 0 8px var(--green);
+  }
+  .blog-month { font-size: 0.7rem; color: var(--text-dim); letter-spacing: 0.2em; }
+  .blog-year { font-size: 0.65rem; color: var(--green-dark); margin-top: 0.2rem; }
+  .blog-content {}
+  .blog-category {
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    color: var(--text-dim);
+    margin-bottom: 0.5rem;
+  }
+  .blog-category::before { content: '[ '; color: var(--green); }
+  .blog-category::after { content: ' ]'; color: var(--green); }
+  .blog-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.9rem;
+    color: var(--green);
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    cursor: pointer;
+    transition: text-shadow 0.2s;
+  }
+  .blog-title:hover { text-shadow: 0 0 10px var(--green); }
+  .blog-excerpt { font-size: 0.78rem; color: var(--text-dim); line-height: 1.6; margin-bottom: 1rem; }
+  .blog-footer { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; }
+  .blog-tags { display: flex; gap: 0.4rem; }
+  .tag {
+    font-size: 0.6rem;
+    padding: 0.1rem 0.4rem;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+  }
+
+  /* ── LIKES & COMMENTS ── */
+  .interact-bar {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+  }
+  .like-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.72rem;
+    padding: 0.35rem 0.8rem;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.05em;
+  }
+  .like-btn:hover, .like-btn.liked {
+    border-color: var(--green);
+    color: var(--green);
+    background: var(--green-glow);
+    box-shadow: 0 0 10px var(--green-glow);
+  }
+  .like-btn.liked { text-shadow: 0 0 6px var(--green); }
+  .like-btn .heart { font-size: 0.9rem; transition: transform 0.2s; }
+  .like-btn:hover .heart { transform: scale(1.3); }
+  .like-btn.liked .heart { animation: heartPop 0.3s ease; }
+  @keyframes heartPop { 0%,100% { transform: scale(1); } 50% { transform: scale(1.5); } }
+  .comment-toggle {
+    display: flex; align-items: center; gap: 0.4rem;
+    font-family: 'Share Tech Mono', monospace; font-size: 0.72rem;
+    padding: 0.35rem 0.8rem;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.05em;
+  }
+  .comment-toggle:hover { border-color: var(--green); color: var(--green); background: var(--green-glow); }
+  .share-btn {
+    margin-left: auto;
+    display: flex; align-items: center; gap: 0.4rem;
+    font-family: 'Share Tech Mono', monospace; font-size: 0.72rem;
+    padding: 0.35rem 0.8rem;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .share-btn:hover { border-color: var(--amber); color: var(--amber); background: rgba(255,183,0,0.1); }
+
+  /* ── COMMENTS SECTION ── */
+  .comments-section {
+    display: none;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px dashed var(--border);
+  }
+  .comments-section.open { display: block; }
+  .comment-form { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+  .comment-input {
+    flex: 1;
+    background: #000;
+    border: 1px solid var(--border);
+    color: var(--green);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.8rem;
+    padding: 0.5rem 0.75rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .comment-input::placeholder { color: var(--text-dim); }
+  .comment-input:focus { border-color: var(--green-dim); box-shadow: 0 0 10px var(--green-glow); }
+  .comment-submit {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.72rem;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--green-dim);
+    background: transparent;
+    color: var(--green);
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .comment-submit:hover { background: var(--green); color: #000; }
+  .comments-list { display: flex; flex-direction: column; gap: 0.5rem; }
+  .comment-item {
+    padding: 0.6rem 0.75rem;
+    background: rgba(0,0,0,0.5);
+    border-left: 2px solid var(--border);
+    font-size: 0.75rem;
+  }
+  .comment-item .comment-author { color: var(--green); font-size: 0.7rem; margin-bottom: 0.2rem; }
+  .comment-item .comment-author span { color: var(--text-dim); margin-left: 0.5rem; font-size: 0.65rem; }
+  .comment-item .comment-text { color: var(--text-dim); line-height: 1.5; }
+  .no-comments { font-size: 0.72rem; color: var(--text-dim); text-align: center; padding: 1rem; }
+
+  /* ── NEW POST FORM ── */
+  .new-post-form {
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  .form-row { margin-bottom: 1rem; }
+  .form-label { display: block; font-size: 0.7rem; color: var(--text-dim); letter-spacing: 0.15em; margin-bottom: 0.4rem; }
+  .form-label::before { content: '> '; color: var(--green); }
+  .form-input, .form-textarea, .form-select {
+    width: 100%;
+    background: #000;
+    border: 1px solid var(--border);
+    color: var(--green);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.82rem;
+    padding: 0.6rem 0.75rem;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    -webkit-appearance: none;
+  }
+  .form-input::placeholder, .form-textarea::placeholder { color: var(--text-dim); }
+  .form-input:focus, .form-textarea:focus, .form-select:focus {
+    border-color: var(--green-dim);
+    box-shadow: 0 0 10px var(--green-glow);
+  }
+  .form-textarea { resize: vertical; min-height: 100px; }
+  .form-select option { background: #000; color: var(--green); }
+
+  /* ── ADD BUTTONS ── */
+  .add-btn {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.78rem;
+    padding: 0.6rem 1.5rem;
+    border: 1px solid var(--green-dim);
+    color: var(--green);
+    background: transparent;
+    cursor: pointer;
+    letter-spacing: 0.1em;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+  .add-btn::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: var(--green);
+    transition: left 0.3s;
+    z-index: -1;
+  }
+  .add-btn:hover { color: #000; }
+  .add-btn:hover::before { left: 0; }
+
+  /* ── TERMINAL FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border);
+    margin-top: 5rem;
+    padding: 2rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: var(--text-dim);
+  }
+  .footer-prompt {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.8rem;
+    color: var(--green);
+    margin-bottom: 0.5rem;
+  }
+  .footer-prompt .boot-cursor { width: 8px; }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: #000; }
+  ::-webkit-scrollbar-thumb { background: var(--green-dim); }
+  ::-webkit-scrollbar-thumb:hover { background: var(--green); }
+
+  /* ── TOAST ── */
+  #toast {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    background: var(--panel);
+    border: 1px solid var(--green);
+    color: var(--green);
+    font-size: 0.78rem;
+    padding: 0.75rem 1.25rem;
+    z-index: 9999;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.3s;
+    pointer-events: none;
+    box-shadow: 0 0 20px var(--green-glow-strong);
+    letter-spacing: 0.05em;
+  }
+  #toast.show { opacity: 1; transform: translateY(0); }
+
+  /* ── EMPTY STATE ── */
+  .empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--text-dim);
+    font-size: 0.8rem;
+    border: 1px dashed var(--border);
+    letter-spacing: 0.1em;
+  }
+  .empty-state .empty-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+
+  /* ── TABS ── */
+  .tabs { display: flex; gap: 0; margin-bottom: 2rem; border: 1px solid var(--border); width: fit-content; }
+  .tab-btn {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.75rem;
+    padding: 0.5rem 1.2rem;
+    border: none;
+    background: transparent;
+    color: var(--text-dim);
+    cursor: pointer;
+    letter-spacing: 0.1em;
+    border-right: 1px solid var(--border);
+    transition: all 0.2s;
+  }
+  .tab-btn:last-child { border-right: none; }
+  .tab-btn.active, .tab-btn:hover {
+    background: var(--green-glow);
+    color: var(--green);
+  }
+
+  /* ── PROGRESS BAR ── */
+  .progress-bar {
+    width: 100%;
+    height: 2px;
+    background: var(--border);
+    margin-top: 0.5rem;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--green);
+    box-shadow: 0 0 6px var(--green);
+    transition: width 0.3s;
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 640px) {
+    main { padding: 1rem; }
+    nav { padding: 0 1rem; }
+    .nav-links { gap: 0; }
+    .nav-links a { padding: 0.3rem 0.5rem; font-size: 0.7rem; }
+    .hero-stats { gap: 1.5rem; }
+    .blog-card { grid-template-columns: 1fr; }
+    .blog-date-block { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- BOOT SCREEN -->
+<div id="boot-screen">
+  <div id="boot-lines" style="width:600px;max-width:100%;"></div>
+</div>
+
+<!-- MATRIX CANVAS -->
+<canvas id="matrix-canvas"></canvas>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- OWNER LOGIN MODAL -->
+<div class="modal-overlay" id="owner-modal" style="z-index:10000;">
+  <div class="modal" style="max-width:380px;">
+    <div class="modal-header">
+      <h3>[ OWNER ACCESS ]</h3>
+      <button class="modal-close" onclick="closeOwnerModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <label class="form-label">OWNER PASSWORD</label>
+        <input class="form-input" id="owner-pass-input" type="password" placeholder="Enter password..." onkeydown="if(event.key==='Enter')submitOwnerLogin()">
+      </div>
+      <div id="owner-login-err" style="color:var(--red);font-size:0.72rem;margin-bottom:0.75rem;display:none;">// ACCESS DENIED: WRONG PASSWORD</div>
+      <button class="add-btn" onclick="submitOwnerLogin()" style="width:100%;">[ AUTHENTICATE ]</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL OVERLAY -->
+<div class="modal-overlay" id="video-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modal-title">[ VIDEO_PLAYER ]</h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <video id="modal-video" controls></video>
+      <div id="modal-interact"></div>
+    </div>
+  </div>
+</div>
+
+<div id="app">
+  <!-- NAV -->
+  <nav>
+    <div class="nav-logo"><span>//</span> JIRAIYA_007</div>
+    <div class="nav-links">
+      <a href="#videos" class="active" onclick="setActive(this)">VIDEOS</a>
+      <a href="#projects" onclick="setActive(this)">PROJECTS</a>
+      <a href="#blog" onclick="setActive(this)">BLOG</a>
+    </div>
+    <div class="nav-status">
+      <div class="status-dot"></div>
+      <span id="clock">00:00:00</span>
+      <button id="owner-btn" onclick="toggleOwnerLogin()" style="margin-left:0.75rem;font-family:'Share Tech Mono',monospace;font-size:0.68rem;padding:0.25rem 0.65rem;border:1px solid var(--border);background:transparent;color:var(--text-dim);cursor:pointer;letter-spacing:0.08em;transition:all 0.2s;" onmouseover="this.style.borderColor='var(--green)';this.style.color='var(--green)'" onmouseout="if(!isOwner){this.style.borderColor='var(--border)';this.style.color='var(--text-dim)'}">⚿ LOGIN</button>
+    </div>
+  </nav>
+
+  <main>
+    <!-- HERO -->
+    <section id="hero">
+      <div class="hero-pre">> INITIALIZING PORTFOLIO_MATRIX v2.0.4 <span class="boot-cursor"></span></div>
+      <h1 class="hero-title">
+        <span class="glitch" data-text="JIRAIYA_007">JIRAIYA_007</span>
+      </h1>
+      <p class="hero-sub">
+        Hacker. Builder. Creator.<br>
+        <span>[ VIDEOS ]</span> &nbsp;·&nbsp; <span>[ PROJECTS ]</span> &nbsp;·&nbsp; <span>[ BLOG ]</span>
+      </p>
+      <div class="hero-stats">
+        <div class="stat">
+          <div class="stat-val" id="stat-videos">0</div>
+          <div class="stat-label">VIDEOS</div>
+        </div>
+        <div class="stat">
+          <div class="stat-val" id="stat-projects">0</div>
+          <div class="stat-label">PROJECTS</div>
+        </div>
+        <div class="stat">
+          <div class="stat-val" id="stat-posts">0</div>
+          <div class="stat-label">BLOG POSTS</div>
+        </div>
+        <div class="stat">
+          <div class="stat-val" id="stat-likes">0</div>
+          <div class="stat-label">TOTAL LIKES</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIDEOS -->
+    <section id="videos">
+      <div class="section-header">
+        <h2>// VIDEOS</h2>
+        <span class="section-tag">UPLOAD & STREAM</span>
+        <div class="section-line"></div>
+        <button class="btn btn-green owner-only" style="display:none;" onclick="toggleNewVideo()">+ UPLOAD</button>
+      </div>
+
+      <!-- Upload Zone -->
+      <div id="upload-zone-container" style="display:none;">
+        <div class="upload-zone panel" id="upload-zone" onclick="document.getElementById('file-input').click()">
+          <div class="upload-icon">▲</div>
+          <div class="upload-text">DRAG & DROP VIDEO FILE HERE<br><span>or click to select file</span></div>
+          <div class="progress-bar" id="upload-progress" style="display:none;">
+            <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+          </div>
+        </div>
+        <div class="panel new-post-form">
+          <div class="form-row">
+            <label class="form-label">VIDEO TITLE</label>
+            <input class="form-input" id="video-title-input" placeholder="Enter video title...">
+          </div>
+          <div class="form-row">
+            <label class="form-label">DESCRIPTION</label>
+            <textarea class="form-textarea" id="video-desc-input" placeholder="Brief description..."></textarea>
+          </div>
+          <button class="add-btn" onclick="addVideo()" style="width:100%;">[ UPLOAD VIDEO ]</button>
+        </div>
+      </div>
+      <input type="file" id="file-input" accept="video/*">
+
+      <div class="videos-grid" id="videos-grid"></div>
+    </section>
+
+    <!-- PROJECTS -->
+    <section id="projects">
+      <div class="section-header">
+        <h2>// PROJECTS</h2>
+        <span class="section-tag">BUILDS & HACKS</span>
+        <div class="section-line"></div>
+        <button class="btn btn-green owner-only" style="display:none;" onclick="toggleNewProject()">+ NEW</button>
+      </div>
+
+      <div id="project-form-container" style="display:none;" class="panel new-post-form">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+          <div class="form-row">
+            <label class="form-label">PROJECT NAME</label>
+            <input class="form-input" id="proj-name" placeholder="My Awesome Project">
+          </div>
+          <div class="form-row">
+            <label class="form-label">STATUS</label>
+            <select class="form-select" id="proj-status">
+              <option value="ACTIVE">ACTIVE</option>
+              <option value="COMPLETED">COMPLETED</option>
+              <option value="WIP">WIP</option>
+              <option value="ARCHIVED">ARCHIVED</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <label class="form-label">DESCRIPTION</label>
+          <textarea class="form-textarea" id="proj-desc" placeholder="What does this project do?"></textarea>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+          <div class="form-row">
+            <label class="form-label">TECH STACK (comma-separated)</label>
+            <input class="form-input" id="proj-stack" placeholder="Python, React, Node.js">
+          </div>
+          <div class="form-row">
+            <label class="form-label">GITHUB URL (optional)</label>
+            <input class="form-input" id="proj-github" placeholder="https://github.com/...">
+          </div>
+        </div>
+        <button class="add-btn" onclick="addProject()" style="width:100%;">[ ADD PROJECT ]</button>
+      </div>
+
+      <div class="projects-grid" id="projects-grid"></div>
+    </section>
+
+    <!-- BLOG -->
+    <section id="blog">
+      <div class="section-header">
+        <h2>// BLOG</h2>
+        <span class="section-tag">TRANSMISSIONS</span>
+        <div class="section-line"></div>
+        <button class="btn btn-green owner-only" style="display:none;" onclick="toggleNewPost()">+ WRITE</button>
+      </div>
+
+      <div id="blog-form-container" style="display:none;" class="panel new-post-form">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+          <div class="form-row">
+            <label class="form-label">POST TITLE</label>
+            <input class="form-input" id="blog-title-input" placeholder="My thoughts on...">
+          </div>
+          <div class="form-row">
+            <label class="form-label">CATEGORY</label>
+            <select class="form-select" id="blog-cat">
+              <option value="TECH">TECH</option>
+              <option value="HACKING">HACKING</option>
+              <option value="TUTORIAL">TUTORIAL</option>
+              <option value="THOUGHTS">THOUGHTS</option>
+              <option value="PROJECT">PROJECT</option>
+              <option value="OTHER">OTHER</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <label class="form-label">CONTENT</label>
+          <textarea class="form-textarea" id="blog-content-input" style="min-height:150px;" placeholder="Write your post here..."></textarea>
+        </div>
+        <div class="form-row">
+          <label class="form-label">TAGS (comma-separated)</label>
+          <input class="form-input" id="blog-tags-input" placeholder="matrix, code, thoughts">
+        </div>
+        <button class="add-btn" onclick="addBlogPost()" style="width:100%;">[ PUBLISH POST ]</button>
+      </div>
+
+      <div class="blog-grid" id="blog-grid"></div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-prompt">
+      root@matrix:~$ <span class="boot-cursor"></span>
+    </div>
+    <p>SYSTEM ONLINE // ALL DATA STORED LOCALLY // NO SURVEILLANCE</p>
+  </footer>
+</div>
+
+<script>
+/* ──────────────────────────────────────
+   OWNER AUTH SYSTEM
+──────────────────────────────────────── */
+const OWNER_PASSWORD = 'sugeetha_ilu'; // Change this to your secret password
+let isOwner = false;
+
+function toggleOwnerLogin() {
+  if (isOwner) {
+    // Logout
+    isOwner = false;
+    document.querySelectorAll('.owner-only').forEach(el => el.style.display = 'none');
+    const btn = document.getElementById('owner-btn');
+    btn.textContent = '⚿ LOGIN';
+    btn.style.borderColor = 'var(--border)';
+    btn.style.color = 'var(--text-dim)';
+    // Hide open forms
+    ['upload-zone-container','project-form-container','blog-form-container'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = 'none';
+    });
+    showToast('OWNER SESSION ENDED');
+  } else {
+    document.getElementById('owner-pass-input').value = '';
+    document.getElementById('owner-login-err').style.display = 'none';
+    document.getElementById('owner-modal').classList.add('active');
+    setTimeout(() => document.getElementById('owner-pass-input').focus(), 100);
+  }
+}
+
+function closeOwnerModal() {
+  document.getElementById('owner-modal').classList.remove('active');
+}
+
+function submitOwnerLogin() {
+  const pass = document.getElementById('owner-pass-input').value;
+  if (pass === OWNER_PASSWORD) {
+    isOwner = true;
+    closeOwnerModal();
+    document.querySelectorAll('.owner-only').forEach(el => el.style.display = '');
+    const btn = document.getElementById('owner-btn');
+    btn.textContent = '⚿ LOGOUT';
+    btn.style.borderColor = 'var(--green)';
+    btn.style.color = 'var(--green)';
+    // Re-render to show delete buttons
+    renderVideos(); renderProjects(); renderBlog();
+    showToast('OWNER ACCESS GRANTED // WELCOME, JIRAIYA_007');
+  } else {
+    document.getElementById('owner-login-err').style.display = 'block';
+    document.getElementById('owner-pass-input').value = '';
+    document.getElementById('owner-pass-input').focus();
+  }
+}
+
+/* ──────────────────────────────────────
+   MATRIX RAIN
+──────────────────────────────────────── */
+(function(){
+  const canvas = document.getElementById('matrix-canvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, cols, drops;
+  const chars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789ABCDEF!@#$%^&*';
+  function init() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+    cols = Math.floor(W / 18);
+    drops = Array(cols).fill(0).map(() => Math.random() * -50);
+  }
+  function draw() {
+    ctx.fillStyle = 'rgba(0,0,0,0.04)';
+    ctx.fillRect(0, 0, W, H);
+    for (let i = 0; i < cols; i++) {
+      const c = chars[Math.floor(Math.random() * chars.length)];
+      const x = i * 18;
+      const y = drops[i] * 18;
+      ctx.fillStyle = drops[i] * 18 < H * 0.1 ? '#fff' : '#00ff41';
+      ctx.font = '14px Share Tech Mono, monospace';
+      ctx.fillText(c, x, y);
+      if (y > H && Math.random() > 0.975) drops[i] = 0;
+      drops[i]++;
+    }
+  }
+  init();
+  setInterval(draw, 40);
+  window.addEventListener('resize', init);
+})();
+
+/* ──────────────────────────────────────
+   BOOT SEQUENCE
+──────────────────────────────────────── */
+const bootLines = [
+  'BIOS v2.04 ... OK',
+  'Loading kernel ... OK',
+  'Mounting filesystem ... OK',
+  'Initializing neural interface ...',
+  'Connecting to THE MATRIX ...',
+  '',
+  '> Welcome. The Matrix has you.',
+  '> Follow the white rabbit.',
+  '> Loading portfolio ...',
+  '',
+  '[ SYSTEM ONLINE ]',
+];
+const bootEl = document.getElementById('boot-lines');
+let bi = 0;
+function showBootLine() {
+  if (bi >= bootLines.length) {
+    setTimeout(() => document.getElementById('boot-screen').classList.add('hidden'), 400);
+    return;
+  }
+  const div = document.createElement('div');
+  div.className = 'boot-line';
+  div.textContent = bootLines[bi] || '\u00a0';
+  div.style.animation = `bootIn 0.05s forwards`;
+  bootEl.appendChild(div);
+  bi++;
+  setTimeout(showBootLine, bi === bootLines.length ? 600 : 120);
+}
+setTimeout(showBootLine, 300);
+
+/* ──────────────────────────────────────
+   CLOCK
+──────────────────────────────────────── */
+function updateClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent =
+    String(now.getHours()).padStart(2,'0') + ':' +
+    String(now.getMinutes()).padStart(2,'0') + ':' +
+    String(now.getSeconds()).padStart(2,'0');
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+/* ──────────────────────────────────────
+   NAV ACTIVE
+──────────────────────────────────────── */
+function setActive(el) {
+  document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+  el.classList.add('active');
+}
+
+/* ──────────────────────────────────────
+   TOAST
+──────────────────────────────────────── */
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = '> ' + msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+/* ──────────────────────────────────────
+   DATA STORE (localStorage)
+──────────────────────────────────────── */
+function getData(key) {
+  try { return JSON.parse(localStorage.getItem(key)) || []; }
+  catch { return []; }
+}
+function setData(key, val) {
+  localStorage.setItem(key, JSON.stringify(val));
+  updateStats();
+}
+
+/* ──────────────────────────────────────
+   STATS
+──────────────────────────────────────── */
+function updateStats() {
+  const videos = getData('videos');
+  const projects = getData('projects');
+  const posts = getData('posts');
+  const allLikes = [...videos, ...projects, ...posts].reduce((a, b) => a + (b.likes || 0), 0);
+  animateCount('stat-videos', videos.length);
+  animateCount('stat-projects', projects.length);
+  animateCount('stat-posts', posts.length);
+  animateCount('stat-likes', allLikes);
+}
+function animateCount(id, target) {
+  const el = document.getElementById(id);
+  const curr = parseInt(el.textContent) || 0;
+  const step = Math.ceil(Math.abs(target - curr) / 15);
+  if (curr < target) { el.textContent = Math.min(curr + step, target); if (parseInt(el.textContent) < target) setTimeout(() => animateCount(id, target), 40); }
+  else { el.textContent = target; }
+}
+
+/* ──────────────────────────────────────
+   LIKE SYSTEM
+──────────────────────────────────────── */
+function getLiked() {
+  try { return JSON.parse(localStorage.getItem('liked_ids')) || []; }
+  catch { return []; }
+}
+function toggleLike(type, id, el) {
+  const items = getData(type);
+  const liked = getLiked();
+  const item = items.find(x => x.id === id);
+  if (!item) return;
+  const uid = `${type}_${id}`;
+  if (liked.includes(uid)) {
+    item.likes = Math.max(0, (item.likes || 0) - 1);
+    const idx = liked.indexOf(uid);
+    liked.splice(idx, 1);
+    el.classList.remove('liked');
+  } else {
+    item.likes = (item.likes || 0) + 1;
+    liked.push(uid);
+    el.classList.add('liked');
+  }
+  localStorage.setItem('liked_ids', JSON.stringify(liked));
+  setData(type, items);
+  el.querySelector('.like-count').textContent = item.likes;
+}
+
+/* ──────────────────────────────────────
+   COMMENTS
+──────────────────────────────────────── */
+function toggleComments(id) {
+  const sec = document.getElementById('comments-' + id);
+  sec.classList.toggle('open');
+  const btn = document.getElementById('cmtbtn-' + id);
+  const count = (getData('comments_' + id) || []).length;
+  if (sec.classList.contains('open')) {
+    btn.textContent = `▲ HIDE COMMENTS (${count})`;
+    renderComments(id);
+  } else {
+    btn.textContent = `▼ COMMENTS (${count})`;
+  }
+}
+function renderComments(id) {
+  const comments = getData('comments_' + id);
+  const list = document.getElementById('comments-list-' + id);
+  if (!comments.length) {
+    list.innerHTML = '<div class="no-comments">// NO TRANSMISSIONS YET. BE THE FIRST.</div>';
+    return;
+  }
+  list.innerHTML = comments.map(c => `
+    <div class="comment-item">
+      <div class="comment-author">${escHtml(c.author || 'ANON')}<span>${c.time}</span></div>
+      <div class="comment-text">${escHtml(c.text)}</div>
+    </div>
+  `).join('');
+}
+function submitComment(id) {
+  const inp = document.getElementById('cinput-' + id);
+  const nameInp = document.getElementById('cname-' + id);
+  const text = inp.value.trim();
+  const author = (nameInp && nameInp.value.trim()) || 'ANON';
+  if (!text) { showToast('EMPTY TRANSMISSION REJECTED'); return; }
+  const comments = getData('comments_' + id);
+  comments.push({
+    author,
+    text,
+    time: new Date().toLocaleString('en-US', { month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit' })
+  });
+  setData('comments_' + id, comments);
+  inp.value = '';
+  renderComments(id);
+  // update count
+  const btn = document.getElementById('cmtbtn-' + id);
+  if (btn) btn.textContent = `▲ HIDE COMMENTS (${comments.length})`;
+  showToast('TRANSMISSION SENT');
+}
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function makeInteractBar(type, item) {
+  const liked = getLiked().includes(`${type}_${item.id}`);
+  return `
+    <div class="interact-bar">
+      <button class="like-btn ${liked ? 'liked' : ''}" id="likebtn-${item.id}" onclick="toggleLike('${type}', '${item.id}', this)">
+        <span class="heart">♥</span> <span class="like-count">${item.likes || 0}</span> LIKES
+      </button>
+      <button class="comment-toggle" id="cmtbtn-${item.id}" onclick="toggleComments('${item.id}')">
+        ▼ COMMENTS (${(getData('comments_' + item.id) || []).length})
+      </button>
+      <button class="share-btn" onclick="shareItem('${item.id}')">⬡ SHARE</button>
+    </div>
+    <div class="comments-section" id="comments-${item.id}">
+      <div class="comment-form">
+        <input class="comment-input" id="cname-${item.id}" placeholder="YOUR_NAME" style="max-width:130px;">
+        <input class="comment-input" id="cinput-${item.id}" placeholder="ENTER TRANSMISSION..." onkeydown="if(event.key==='Enter')submitComment('${item.id}')">
+        <button class="comment-submit" onclick="submitComment('${item.id}')">SEND</button>
+      </div>
+      <div class="comments-list" id="comments-list-${item.id}"></div>
+    </div>
+  `;
+}
+
+function shareItem(id) {
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(window.location.href + '#' + id);
+    showToast('LINK COPIED TO CLIPBOARD');
+  } else {
+    showToast('SHARE: ' + window.location.href + '#' + id);
+  }
+}
+
+/* ──────────────────────────────────────
+   VIDEOS
+──────────────────────────────────────── */
+let pendingVideoFile = null;
+
+document.getElementById('file-input').addEventListener('change', function(e) {
+  const f = e.target.files[0];
+  if (!f) return;
+  pendingVideoFile = f;
+  if (!document.getElementById('video-title-input').value) {
+    document.getElementById('video-title-input').value = f.name.replace(/\.[^.]+$/, '');
+  }
+  showToast('FILE LOADED: ' + f.name);
+});
+
+// Drag & Drop
+const uz = document.getElementById('upload-zone');
+uz.addEventListener('dragover', e => { e.preventDefault(); uz.classList.add('drag-over'); });
+uz.addEventListener('dragleave', () => uz.classList.remove('drag-over'));
+uz.addEventListener('drop', e => {
+  e.preventDefault(); uz.classList.remove('drag-over');
+  const f = e.dataTransfer.files[0];
+  if (f && f.type.startsWith('video/')) {
+    pendingVideoFile = f;
+    document.getElementById('video-title-input').value = f.name.replace(/\.[^.]+$/, '');
+    showToast('FILE LOADED: ' + f.name);
+  }
+});
+
+function toggleNewVideo() {
+  const c = document.getElementById('upload-zone-container');
+  c.style.display = c.style.display === 'none' ? 'block' : 'none';
+}
+
+function addVideo() {
+  const title = document.getElementById('video-title-input').value.trim();
+  const desc = document.getElementById('video-desc-input').value.trim();
+  if (!title) { showToast('VIDEO TITLE REQUIRED'); return; }
+  if (!pendingVideoFile) { showToast('NO VIDEO FILE SELECTED'); return; }
+
+  const bar = document.getElementById('upload-progress');
+  const fill = document.getElementById('progress-fill');
+  bar.style.display = 'block';
+
+  // Simulate upload progress
+  let p = 0;
+  const interval = setInterval(() => {
+    p += Math.random() * 20;
+    fill.style.width = Math.min(p, 90) + '%';
+  }, 150);
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    clearInterval(interval);
+    fill.style.width = '100%';
+    setTimeout(() => {
+      bar.style.display = 'none';
+      fill.style.width = '0%';
+
+      const videos = getData('videos');
+      const id = 'v_' + Date.now();
+      videos.unshift({
+        id, title, desc,
+        src: e.target.result,
+        date: new Date().toISOString(),
+        likes: 0
+      });
+      setData('videos', videos);
+      renderVideos();
+      document.getElementById('video-title-input').value = '';
+      document.getElementById('video-desc-input').value = '';
+      pendingVideoFile = null;
+      document.getElementById('upload-zone-container').style.display = 'none';
+      showToast('VIDEO UPLOADED: ' + title);
+    }, 300);
+  };
+  reader.readAsDataURL(pendingVideoFile);
+}
+
+function renderVideos() {
+  const grid = document.getElementById('videos-grid');
+  const videos = getData('videos');
+  if (!videos.length) {
+    grid.innerHTML = '<div class="empty-state"><div class="empty-icon">▶</div>NO VIDEO FEEDS. UPLOAD YOUR FIRST TRANSMISSION.</div>';
+    return;
+  }
+  grid.innerHTML = videos.map(v => `
+    <div class="panel video-card" id="${v.id}">
+      <div class="video-thumb" onclick="openVideoModal('${v.id}')">
+        <div class="thumb-placeholder">
+          <div class="play-icon">▶</div>
+          <div>[ CLICK TO PLAY ]</div>
+        </div>
+        <div class="video-overlay">▶</div>
+      </div>
+      <div class="video-info">
+        <div class="video-title">${escHtml(v.title)}</div>
+        <div class="video-meta">
+          <span>${new Date(v.date).toLocaleDateString()}</span>
+          <span>▶ ${v.likes || 0} LIKES</span>
+        </div>
+        ${v.desc ? `<div style="font-size:0.72rem;color:var(--text-dim);margin-top:0.5rem;">${escHtml(v.desc)}</div>` : ''}
+        ${makeInteractBar('videos', v)}
+      </div>
+    </div>
+  `).join('');
+}
+
+function openVideoModal(id) {
+  const videos = getData('videos');
+  const v = videos.find(x => x.id === id);
+  if (!v) return;
+  document.getElementById('modal-title').textContent = '[ ' + v.title.toUpperCase() + ' ]';
+  const vid = document.getElementById('modal-video');
+  vid.src = v.src;
+  document.getElementById('modal-interact').innerHTML = makeInteractBar('videos', v);
+  document.getElementById('video-modal').classList.add('active');
+}
+function closeModal() {
+  document.getElementById('video-modal').classList.remove('active');
+  document.getElementById('modal-video').src = '';
+}
+document.getElementById('video-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+/* ──────────────────────────────────────
+   PROJECTS
+──────────────────────────────────────── */
+function toggleNewProject() {
+  const c = document.getElementById('project-form-container');
+  c.style.display = c.style.display === 'none' ? 'block' : 'none';
+}
+
+function addProject() {
+  const name = document.getElementById('proj-name').value.trim();
+  const status = document.getElementById('proj-status').value;
+  const desc = document.getElementById('proj-desc').value.trim();
+  const stack = document.getElementById('proj-stack').value.split(',').map(s=>s.trim()).filter(Boolean);
+  const github = document.getElementById('proj-github').value.trim();
+  if (!name) { showToast('PROJECT NAME REQUIRED'); return; }
+  const projects = getData('projects');
+  const id = 'p_' + Date.now();
+  projects.unshift({ id, name, status, desc, stack, github, date: new Date().toISOString(), likes: 0 });
+  setData('projects', projects);
+  renderProjects();
+  ['proj-name','proj-desc','proj-stack','proj-github'].forEach(k => document.getElementById(k).value = '');
+  document.getElementById('project-form-container').style.display = 'none';
+  showToast('PROJECT ADDED: ' + name);
+}
+
+function renderProjects() {
+  const grid = document.getElementById('projects-grid');
+  const projects = getData('projects');
+  if (!projects.length) {
+    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">⬡</div>NO PROJECTS LOGGED. ADD YOUR FIRST BUILD.</div>';
+    return;
+  }
+  grid.innerHTML = projects.map(p => `
+    <div class="panel project-card" id="${p.id}">
+      <div class="project-tag ${p.status === 'ACTIVE' ? 'active' : ''}">${p.status}</div>
+      <div class="project-name">${escHtml(p.name)}</div>
+      <div class="project-desc">${escHtml(p.desc || 'No description provided.')}</div>
+      <div class="project-stack">
+        ${p.stack.map(s=>`<span class="stack-badge">${escHtml(s)}</span>`).join('')}
+      </div>
+      <div class="project-links">
+        ${p.github ? `<a class="btn btn-green" href="${escHtml(p.github)}" target="_blank">⬡ GITHUB</a>` : ''}
+        ${isOwner ? `<button class="btn btn-dim" onclick="deleteItem('projects','${p.id}',renderProjects)">✕ DELETE</button>` : ''}
+      </div>
+      ${makeInteractBar('projects', p)}
+    </div>
+  `).join('');
+}
+
+/* ──────────────────────────────────────
+   BLOG
+──────────────────────────────────────── */
+function toggleNewPost() {
+  const c = document.getElementById('blog-form-container');
+  c.style.display = c.style.display === 'none' ? 'block' : 'none';
+}
+
+function addBlogPost() {
+  const title = document.getElementById('blog-title-input').value.trim();
+  const cat = document.getElementById('blog-cat').value;
+  const content = document.getElementById('blog-content-input').value.trim();
+  const tags = document.getElementById('blog-tags-input').value.split(',').map(t=>t.trim()).filter(Boolean);
+  if (!title || !content) { showToast('TITLE & CONTENT REQUIRED'); return; }
+  const posts = getData('posts');
+  const id = 'b_' + Date.now();
+  posts.unshift({ id, title, cat, content, tags, date: new Date().toISOString(), likes: 0 });
+  setData('posts', posts);
+  renderBlog();
+  ['blog-title-input','blog-content-input','blog-tags-input'].forEach(k => document.getElementById(k).value = '');
+  document.getElementById('blog-form-container').style.display = 'none';
+  showToast('POST PUBLISHED: ' + title);
+}
+
+function renderBlog() {
+  const grid = document.getElementById('blog-grid');
+  const posts = getData('posts');
+  if (!posts.length) {
+    grid.innerHTML = '<div class="empty-state"><div class="empty-icon">✎</div>NO TRANSMISSIONS. PUBLISH YOUR FIRST POST.</div>';
+    return;
+  }
+  grid.innerHTML = posts.map(p => {
+    const d = new Date(p.date);
+    const day = String(d.getDate()).padStart(2,'0');
+    const month = d.toLocaleString('en-US',{month:'short'}).toUpperCase();
+    const year = d.getFullYear();
+    const excerpt = p.content.length > 200 ? p.content.substring(0,200) + '...' : p.content;
+    return `
+      <div class="panel blog-card" id="${p.id}">
+        <div class="blog-date-block">
+          <div class="blog-day">${day}</div>
+          <div class="blog-month">${month}</div>
+          <div class="blog-year">${year}</div>
+        </div>
+        <div class="blog-content">
+          <div class="blog-category">${p.cat}</div>
+          <div class="blog-title" onclick="openBlogModal('${p.id}')">${escHtml(p.title)}</div>
+          <div class="blog-excerpt">${escHtml(excerpt)}</div>
+          <div class="blog-footer">
+            <div class="blog-tags">
+              ${p.tags.map(t=>`<span class="tag">#${escHtml(t)}</span>`).join('')}
+            </div>
+            ${isOwner ? `<button class="btn btn-dim" onclick="deleteItem('posts','${p.id}',renderBlog)">✕ DELETE</button>` : ''}
+          </div>
+          ${makeInteractBar('posts', p)}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function openBlogModal(id) {
+  const posts = getData('posts');
+  const p = posts.find(x => x.id === id);
+  if (!p) return;
+  const modal = document.getElementById('video-modal');
+  document.getElementById('modal-title').textContent = '[ ' + p.title.toUpperCase() + ' ]';
+  document.getElementById('modal-video').style.display = 'none';
+  document.getElementById('modal-interact').innerHTML = `
+    <div style="color:var(--text-dim);font-size:0.7rem;margin-bottom:1rem;letter-spacing:0.15em;">
+      [ ${p.cat} ] &nbsp;·&nbsp; ${new Date(p.date).toLocaleString()}
+    </div>
+    <div style="color:var(--green);font-size:0.85rem;line-height:1.8;white-space:pre-wrap;margin-bottom:1rem;">${escHtml(p.content)}</div>
+    <div style="display:flex;gap:0.4rem;margin-bottom:1rem;">
+      ${p.tags.map(t=>`<span class="tag">#${escHtml(t)}</span>`).join('')}
+    </div>
+    ${makeInteractBar('posts', p)}
+  `;
+  modal.classList.add('active');
+}
+
+/* ──────────────────────────────────────
+   DELETE
+──────────────────────────────────────── */
+function deleteItem(type, id, rerender) {
+  const items = getData(type);
+  const idx = items.findIndex(x => x.id === id);
+  if (idx === -1) return;
+  if (!confirm('DELETE THIS ITEM?')) return;
+  items.splice(idx, 1);
+  setData(type, items);
+  rerender();
+  showToast('ITEM DELETED');
+}
+
+/* ──────────────────────────────────────
+   INIT
+──────────────────────────────────────── */
+function init() {
+  renderVideos();
+  renderProjects();
+  renderBlog();
+  updateStats();
+
+  // Seed demo data if empty
+  if (!getData('projects').length) {
+    const demoProjects = [
+      { id: 'demo_p1', name: 'NEURAL_HACK', status: 'ACTIVE', desc: 'A neural network that predicts system vulnerabilities in real-time.', stack: ['Python','TensorFlow','FastAPI'], github: '', date: new Date().toISOString(), likes: 7 },
+      { id: 'demo_p2', name: 'GHOST_SHELL', status: 'COMPLETED', desc: 'Minimal OS bootstrapper written in assembly for ultra-fast boot times.', stack: ['Assembly','C','Linux'], github: '', date: new Date().toISOString(), likes: 12 },
+      { id: 'demo_p3', name: 'RABBIT_HOLE', status: 'WIP', desc: 'Deep web link aggregator with automated trust scoring.', stack: ['Rust','Tor','SQLite'], github: '', date: new Date().toISOString(), likes: 5 },
+    ];
+    setData('projects', demoProjects);
+    renderProjects();
+  }
+  if (!getData('posts').length) {
+    const demoPosts = [
+      { id: 'demo_b1', title: 'The Matrix is Everywhere', cat: 'THOUGHTS', content: 'The matrix is a system, Neo. That system is our enemy. But when you\'re inside, you look around, what do you see? Businessmen, teachers, lawyers, carpenters. The very minds of the people we are trying to save. But until we do, these people are still a part of that system and that makes them our enemy.\n\nCode is not just a tool. It\'s a language. A philosophy. The way we shape reality through logic and abstraction.', tags: ['matrix','philosophy','code'], date: new Date().toISOString(), likes: 23 },
+      { id: 'demo_b2', title: 'Why I Love Monochrome Terminals', cat: 'TECH', content: 'There\'s something deeply satisfying about a pure black and green terminal. No distractions. No gradients. Just text and logic.\n\nThe signal-to-noise ratio of a well-configured terminal is unmatched. Everything else is noise.', tags: ['terminal','ux','linux'], date: new Date(Date.now() - 86400000).toISOString(), likes: 15 },
+    ];
+    setData('posts', demoPosts);
+    renderBlog();
+  }
+  updateStats();
+}
+
+// Restore video modal video element display on close
+document.getElementById('video-modal').addEventListener('click', function(e) {
+  if (e.target === this) {
+    closeModal();
+    document.getElementById('modal-video').style.display = '';
+  }
+});
+
+document.querySelector('.modal-close').addEventListener('click', () => {
+  document.getElementById('modal-video').style.display = '';
+});
+
+init();
+</script>
+</body>
+</html>
